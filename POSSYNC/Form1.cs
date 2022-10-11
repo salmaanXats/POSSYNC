@@ -25,10 +25,15 @@ namespace POSSYNC
             }
 
             var data = ReadHistoryDataFromDB();
-            if (data.Count == 0)
+            if (data.Item1.Count == 0)
             {
                 MessageBox.Show("No records found", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
+            }
+
+            foreach (var header in data.Item1)
+            {
+               header.HistoryTransactions =  data.Item2.Where(p => p.bill_no == header.bill_no && p.bill_date == header.bill_date).ToList();
             }
 
             var formattedData = FormatData(data);
@@ -66,18 +71,17 @@ namespace POSSYNC
                     ws.Cell("Q2").Value = "Total Tax";
                     ws.Cell("R2").Value = "Total Discount";
                     ws.Cell("S2").Value = "Total Gift Voucher Sale";
-                    ws.Cell("T2").Value = "Total Gift Voucher Tax";
-                    ws.Cell("U2").Value = "Total Gift Voucher Discount";
-                    ws.Cell("V2").Value = "Paid By Cash";
-                    ws.Cell("W2").Value = "Paid By Card";
-                    ws.Cell("X2").Value = "Card Bank";
-                    ws.Cell("Y2").Value = "Card Category";
-                    ws.Cell("Z2").Value = "Card Type";
-                    ws.Cell("AA2").Value = "Gift Voucher Burn";
-                    ws.Cell("AB2").Value = "HCM Loyalty";
-                    ws.Cell("AC2").Value = "Tenant Loyalty";
-                    ws.Cell("AD2").Value = "Credit Note";
-                    ws.Cell("AE2").Value = "Other Payments";
+                    ws.Cell("T2").Value = "Total Gift Voucher Discount";
+                    ws.Cell("U2").Value = "Paid By Cash";
+                    ws.Cell("V2").Value = "Paid By Card";
+                    ws.Cell("W2").Value = "Card Bank";
+                    ws.Cell("X2").Value = "Card Category";
+                    ws.Cell("Y2").Value = "Card Type";
+                    ws.Cell("Z2").Value = "Gift Voucher Burn";
+                    ws.Cell("AA2").Value = "HCM Loyalty";
+                    ws.Cell("AB2").Value = "Tenant Loyalty";
+                    ws.Cell("AC2").Value = "Credit Note";
+                    ws.Cell("AD2").Value = "Other Payments";
 
                     var index = 3;
 
@@ -102,18 +106,17 @@ namespace POSSYNC
                         ws.Cell($"Q{index}").Value = item.tax;
                         ws.Cell($"R{index}").Value = item.Discount_amt;
                         ws.Cell($"S{index}").Value = item.totalGiftVoucherSale;
-                        ws.Cell($"T{index}").Value = item.totalGiftVoucherTax;
-                        ws.Cell($"U{index}").Value = item.totalGiftVoucherDiscount;
-                        ws.Cell($"V{index}").Value = item.paidByCash;
-                        ws.Cell($"W{index}").Value = item.paidByCard;
-                        ws.Cell($"X{index}").Value = item.cardBank;
-                        ws.Cell($"Y{index}").Value = item.cardCategory;
-                        ws.Cell($"Z{index}").Value = item.cardType;
-                        ws.Cell($"AA{index}").Value = item.giftVoucherBurn;
-                        ws.Cell($"AB{index}").Value = item.hcmLoyalty;
-                        ws.Cell($"AC{index}").Value = item.tenantLoyalty;
-                        ws.Cell($"AD{index}").Value = item.creditNote;
-                        ws.Cell($"AE{index}").Value = item.otherPayments;
+                        ws.Cell($"T{index}").Value = item.totalGiftVoucherDiscount;
+                        ws.Cell($"U{index}").Value = item.paidByCash;
+                        ws.Cell($"V{index}").Value = item.paidByCard;
+                        ws.Cell($"W{index}").Value = item.cardBank;
+                        ws.Cell($"X{index}").Value = item.cardCategory;
+                        ws.Cell($"Y{index}").Value = item.cardType;
+                        ws.Cell($"Z{index}").Value = item.giftVoucherBurn;
+                        ws.Cell($"AA{index}").Value = item.hcmLoyalty;
+                        ws.Cell($"AB{index}").Value = item.tenantLoyalty;
+                        ws.Cell($"AC{index}").Value = item.creditNote;
+                        ws.Cell($"AD{index}").Value = item.otherPayments;
                         index = index + 1;
                     }
 
@@ -134,10 +137,10 @@ namespace POSSYNC
             }
         }
 
-        private List<HistoryHeaderMapper> FormatData(List<HistoryHeader> data)
+        private List<HistoryHeaderMapper> FormatData((List<HistoryHeader>, List<HistoryTran>) data)
         {
-            data.ForEach(p => p.Format());
-            var formattedData = data.Select(p => new HistoryHeaderMapper()
+            data.Item1.ForEach(p => p.Format());
+            var formattedData = data.Item1.Select(p => new HistoryHeaderMapper()
             {
                 tenantId = p.tenantId,
                 posId = p.posId,
@@ -168,27 +171,33 @@ namespace POSSYNC
             return formattedData;
         }
 
-        private List<HistoryHeader> ReadHistoryDataFromDB()
+        private (List<HistoryHeader>, List<HistoryTran>) ReadHistoryDataFromDB()
         {
             var startDate = dtpStartDate.Value.ToString("yyyy-MM-dd");
             var endDate = dtpEndDate.Value.ToString("yyyy-MM-dd");
 
             var data = new List<HistoryHeader>();
+            var dataTran = new List<HistoryTran>();
             var connectionString = ConfigurationManager.ConnectionStrings["prod"].ConnectionString;
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 SqlCommand command = new SqlCommand(
-                    @"SELECT hh.*,da.cMobile,ht.tran_code,ht.tran_desc FROM [dbo].[History_header] as hh
+                    @"SELECT hh.*,da.cMobile FROM [dbo].[History_header] as hh
                       left join [dbo].[delivery_moreAddress] as da on hh.cCode = da.cCode and da.cMobile != ''
-                      left join (SELECT distinct tran_code,tran_desc,bill_date,bill_no FROM [dbo].[History_tran]
-                      where tran_type ='P') as ht on hh.bill_date = ht.bill_date and hh.bill_no = ht.bill_no
                       WHERE hh.bill_date between @0 and @1
                       order by hh.bill_date ,hh.bill_no;", conn);
 
                 command.Parameters.Add(new SqlParameter("0", startDate));
                 command.Parameters.Add(new SqlParameter("1", endDate));
+
+                SqlCommand command1 = new SqlCommand(
+                    @"SELECT * FROM [dbo].[History_tran]
+                      WHERE bill_date between @0 and @1;", conn);
+
+                command1.Parameters.Add(new SqlParameter("0", startDate));
+                command1.Parameters.Add(new SqlParameter("1", endDate));
 
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -199,9 +208,18 @@ namespace POSSYNC
                         data.Add(newObject);
                     }
                 }
-            }
 
-            return data;
+                using (SqlDataReader reader = command1.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var newObject = new HistoryTran();
+                        reader.MapDataToObject(newObject);
+                        dataTran.Add(newObject);
+                    }
+                }
+            }
+            return (data,dataTran);
         }
 
         private void btnSelectPath_Click(object sender, EventArgs e)

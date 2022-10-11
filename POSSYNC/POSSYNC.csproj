@@ -132,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\HistoryHeader.cs" />
+    <Compile Include="Entities\HistoryTran.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
