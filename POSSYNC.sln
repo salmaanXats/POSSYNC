@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POSSYNC", "POSSYNC\POSSYNC.csproj", "{36E3BC3A-021D-492B-BBAF-694ED1FFDE91}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BackgroundProcess", "BackgroundProcess", "{4F0DEB44-A971-4A7B-B179-00E2C781F041}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSyncer", "BackgroundProcess\DataSyncer\DataSyncer.csproj", "{214D2B53-0968-49CC-A91B-5C8679D40819}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +19,16 @@ Global
 		{36E3BC3A-021D-492B-BBAF-694ED1FFDE91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36E3BC3A-021D-492B-BBAF-694ED1FFDE91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36E3BC3A-021D-492B-BBAF-694ED1FFDE91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{214D2B53-0968-49CC-A91B-5C8679D40819}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{214D2B53-0968-49CC-A91B-5C8679D40819}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{214D2B53-0968-49CC-A91B-5C8679D40819}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{214D2B53-0968-49CC-A91B-5C8679D40819}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{214D2B53-0968-49CC-A91B-5C8679D40819} = {4F0DEB44-A971-4A7B-B179-00E2C781F041}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EC41A021-86FA-42D6-BBD9-BFE69A673863}
