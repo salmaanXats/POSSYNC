@@ -63,7 +63,7 @@ namespace DataSyncer.Entities
             this.totalDiscount = discount == null ? 0.00m : discount.tran_amt * -1;
             totalTax = taxTrans == null ? 0 : taxTrans.tran_amt;
 
-            if (bill_valid != "X" || bill_valid != "Y" || !bill_valid.StartsWith("-"))
+            if (bill_valid != "X" || bill_valid != "Y" || !bill_amt.ToString().StartsWith("-"))
             {
                 if (paidBills == null)
                     paidByCash = 0;
@@ -106,11 +106,14 @@ namespace DataSyncer.Entities
                 }
             }
 
-            if (bill_valid == "X" || bill_valid == "Y" || bill_valid.StartsWith("-"))
+            if (bill_valid == "X" || bill_valid == "Y" || bill_amt.ToString().StartsWith("-"))
                 paidByCash = 0;
 
             if (bill_mode == "CO")
+            {
                 paidByCash = 0;
+                Discount_amt = bill_amt;
+            }
             return this;
         }
     }

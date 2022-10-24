@@ -23,6 +23,10 @@ namespace DataSyncer
             {
                 header.BillTransactions = billdata.BillTran.Where(p => p.bill_no == header.bill_no && p.bill_date == header.bill_date).ToList();
                 header.Format();
+
+                if (header.bill_valid.ToLower() == "y")
+                    continue;
+
                 await syncService.SyncData(header);
             }
         }
